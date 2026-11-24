@@ -4,7 +4,7 @@ All notable changes to hots-connector are listed here. Versions follow
 [semantic versioning](https://semver.org/); while the version is 0.x, a minor
 release may change settings or the HTTP API.
 
-## 0.1.0 (YYYY-MM-DD)
+## 0.1.0 (2026-11-24)
 
 First public release.
 
