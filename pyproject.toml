@@ -1,0 +1,94 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hots-connector"
+dynamic = ["version"]
+description = "Connects HOTS to a live environment: Prometheus metrics in, placement moves applied on Docker or Kubernetes, over Kafka."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE.txt"]
+authors = [{name = "Smile R&D team", email = "rnd@smile.fr"}]
+keywords = ["hots", "placement", "kafka", "prometheus", "kubernetes", "docker"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "Operating System :: POSIX",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: System :: Distributed Computing",
+]
+dependencies = [
+  "pydantic>=2.6",
+  "pydantic-settings>=2.2",
+  "fastapi>=0.110",
+  "uvicorn[standard]>=0.27",
+  "prometheus-api-client>=0.5.5",
+]
+
+[project.optional-dependencies]
+# One extra per pluggable backend -- only install the client library for the
+# backend(s) you actually run. `dev` pulls in all of them so the full test
+# suite (including contract tests) can run locally.
+docker = ["docker>=7.0"]
+kafka = ["confluent-kafka>=2.3"]
+kubernetes = ["kubernetes>=29.0"]
+dev = [
+  "hots-connector[docker,kafka,kubernetes]",
+  "pytest>=8.0",
+  "pytest-cov>=5.0",
+  "ruff>=0.3",
+  "mypy>=1.8",
+  "types-requests",
+  "httpx>=0.26",
+  "python-dotenv>=1.0"
+]
+
+[project.urls]
+Homepage = "https://github.com/Smile-SA/hots-connector"
+Source = "https://github.com/Smile-SA/hots-connector"
+Issues = "https://github.com/Smile-SA/hots-connector/issues"
+Changelog = "https://github.com/Smile-SA/hots-connector/blob/main/CHANGELOG.md"
+
+[project.scripts]
+hots-connector = "hots_connector.cli:main"
+
+[tool.setuptools.dynamic]
+version = {file = "VERSION.txt"}
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["hots_connector*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+strict_optional = true
+show_error_codes = true
+namespace_packages = false
+
+# These are optional-extra dependencies (see [project.optional-dependencies])
+# and none of them ship inline types or a py.typed marker, so mypy can't
+# check calls into them regardless -- suppress the import noise rather than
+# scattering `type: ignore[import-untyped]` at every backend import site.
+[[tool.mypy.overrides]]
+module = ["docker.*", "confluent_kafka.*", "kubernetes.*", "prometheus_api_client.*"]
+ignore_missing_imports = true

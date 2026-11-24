@@ -1,0 +1,28 @@
+stages:
+  - lint
+  - test
+
+default:
+  image: python:3.10-slim
+  before_script:
+    - python -m venv .venv
+    - .venv/bin/python -m pip install --upgrade pip
+    # `dev` pulls in the docker/kafka/kubernetes extras too, so lint/type
+    # checks and the full test suite (including the SDK-stubbed unit tests)
+    # run against the same set of backends a real deployment could pick.
+    - .venv/bin/python -m pip install -e ".[dev]"
+
+lint:
+  stage: lint
+  script:
+    - .venv/bin/python -m ruff check hots_connector tests
+
+typecheck:
+  stage: lint
+  script:
+    - .venv/bin/python -m mypy hots_connector
+
+unit-tests:
+  stage: test
+  script:
+    - .venv/bin/python -m pytest
